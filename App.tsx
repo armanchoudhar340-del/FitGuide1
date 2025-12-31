@@ -99,7 +99,7 @@ const AppContent: React.FC = () => {
   return (
     <Layout user={user}>
       <Routes>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
         <Route
           path="/dashboard"
           element={
