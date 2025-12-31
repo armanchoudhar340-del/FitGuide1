@@ -1,0 +1,8 @@
+
+{
+  "name": "FitGuide - Gym & Home Workout Planner",
+  "description": "A beginner-friendly fitness companion that generates personalized workout plans based on your BMI, goals, and equipment availability.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
