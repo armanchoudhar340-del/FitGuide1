@@ -103,7 +103,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           },
         }),
         new Promise<{ data: any; error: any }>((resolve) =>
-          setTimeout(() => resolve({ data: null, error: { message: 'Request timed out. Please check your connection.' } }), 8000)
+          setTimeout(() => resolve({ data: null, error: { message: 'Request timed out. Please check your connection or try again later.' } }), 30000)
         )
       ]);
 
@@ -208,7 +208,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           password,
         }),
         new Promise<{ error: any }>((resolve) =>
-          setTimeout(() => resolve({ error: { message: 'Request timed out. Please check your connection.' } }), 8000)
+          setTimeout(() => resolve({ error: { message: 'Request timed out. Please check your connection or try again later.' } }), 30000)
         )
       ]);
 

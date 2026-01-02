@@ -12,8 +12,8 @@ export enum FitnessGoal {
 }
 
 export enum WorkoutLocation {
-  GYM = 'Gym',
-  HOME = 'Home'
+  GYM = 'GYM',
+  HOME = 'HOME'
 }
 
 export enum BMICategory {

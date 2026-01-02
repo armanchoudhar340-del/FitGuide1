@@ -84,20 +84,6 @@ const LoginPage: React.FC = () => {
             </span>
           ) : 'Sign In'}
         </button>
-
-        <div className="relative flex py-2 items-center my-4">
-          <div className="flex-grow border-t border-slate-200"></div>
-          <span className="flex-shrink-0 mx-4 text-slate-400 text-xs font-bold uppercase">Or</span>
-          <div className="flex-grow border-t border-slate-200"></div>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => navigate('/dashboard')}
-          className="w-full py-4 bg-white border-2 border-slate-100 hover:border-slate-300 text-slate-600 font-bold rounded-xl transition-all"
-        >
-          Continue as Guest
-        </button>
       </form>
 
       {/* Links */}
@@ -109,8 +95,10 @@ const LoginPage: React.FC = () => {
           </Link>
         </div>
       </div>
-    </AuthLayout>
+    </AuthLayout >
   );
 };
+
+export default LoginPage;
 
 

@@ -1,6 +1,6 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { UserProfile, BMICategory } from "../types";
+import { UserProfile, BMICategory, WorkoutLocation } from "../types";
 
 // The API key is obtained from Vite environment variables for browser compatibility
 // The API key is obtained from Vite environment variables for browser compatibility
@@ -15,7 +15,7 @@ export const getFitnessInsight = async (user: UserProfile, bmiScore: number, bmi
     }
 
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-1.5-flash",
       contents: `Generate a short, encouraging fitness insight for a ${user.age} year old ${user.gender} aiming for ${user.goal}. 
       BMI is ${bmiScore.toFixed(1)} (${bmiCategory}). 
       Workout Location: ${user.location}. 
@@ -56,12 +56,12 @@ export const generateAiWorkoutRoutine = async (user: UserProfile, bmiCategory: s
       return getDefaultWorkoutRoutine(user, bmiCategory);
     }
 
-    const equipmentText = user.location === 'Gym'
+    const equipmentText = user.location === WorkoutLocation.GYM
       ? `Available Equipment: ${user.availableEquipment.join(', ')}`
       : 'Location: Home (No heavy equipment)';
 
     const response = await ai.models.generateContent({
-      model: "gemini-3-pro-preview",
+      model: "gemini-1.5-flash",
       contents: `As a world-class personal trainer, generate a custom daily workout routine for a beginner.
       User Profile: ${user.age}yr old ${user.gender}, Goal: ${user.goal}, BMI Status: ${bmiCategory}.
       ${equipmentText}.
@@ -84,7 +84,7 @@ export const generateAiWorkoutRoutine = async (user: UserProfile, bmiCategory: s
 };
 
 const getDefaultWorkoutRoutine = (user: UserProfile, bmiCategory: string): string => {
-  if (user.location === 'Home') {
+  if (user.location === WorkoutLocation.HOME) {
     return `🏠 **Home Workout Routine**
 
 1. **Push-ups** - 3 sets of 10-15 reps
@@ -131,7 +131,7 @@ export const generateMealPlan = async (user: UserProfile) => {
       return "Focus on whole foods, lean proteins, and plenty of greens. Try to eat every 3-4 hours to keep your energy stable!";
     }
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-1.5-flash",
       contents: `As a professional nutritionist, generate a 1-day sample meal plan for a ${user.age} year old ${user.gender} who wants to ${user.goal}. 
       Height: ${user.height}cm, Weight: ${user.weight}kg. 
       Format the response with headers for Breakfast, Lunch, Snack, and Dinner. Keep it concise and beginner-friendly.`,
@@ -152,7 +152,7 @@ export const chatWithFitGuide = async (history: { role: 'user' | 'model', messag
       return "I'm sorry, I can't chat right now as the AI service is not configured. Please check back later!";
     }
     const chat = ai.chats.create({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-1.5-flash',
       config: {
         systemInstruction: 'You are FitGuide Assistant, a friendly fitness coach for beginners. Provide simple, safe, and effective advice on gym machines, home workouts, and basic nutrition. Always encourage proper form.',
       },

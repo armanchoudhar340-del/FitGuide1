@@ -236,7 +236,9 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ user }) => {
 
   const processedExercises = useMemo(() => {
     // 1. Initial location filter
-    let pool = EXERCISES.filter(ex => ex.location.includes(user.location));
+    let pool = EXERCISES.filter(ex =>
+      ex.location.some(loc => loc.toLowerCase() === user.location.toLowerCase())
+    );
 
     // 2. Equipment Substitution Logic
     if (user.location === WorkoutLocation.GYM) {
@@ -254,14 +256,21 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ user }) => {
           if (replacement) finalPool.push(replacement);
         }
       });
-      pool = finalPool.filter(ex => ex.location.includes(user.location));
+      pool = finalPool.filter(ex =>
+        ex.location.some(loc => loc.toLowerCase() === user.location.toLowerCase())
+      );
     }
 
-    // 3. Muscle Group Filter
+    // 3. Smart Filter (Muscle, Difficulty, or Location)
     if (activeMuscle) {
-      pool = pool.filter(ex =>
-        ex.muscles.some(m => m.toLowerCase().includes(activeMuscle.toLowerCase()))
-      );
+      const search = activeMuscle.toLowerCase();
+      pool = pool.filter(ex => {
+        const matchesMuscle = ex.muscles.some(m => m.toLowerCase().includes(search));
+        const matchesDifficulty = ex.difficulty?.toLowerCase() === search;
+        const matchesLocation = search === 'home' ? ex.location.includes(WorkoutLocation.HOME) : false;
+
+        return matchesMuscle || matchesDifficulty || matchesLocation;
+      });
     }
 
     // 4. BMI Priority Sorting
@@ -445,31 +454,27 @@ const WorkoutView: React.FC<WorkoutViewProps> = ({ user }) => {
         <div className="mt-4 flex flex-wrap gap-2">
           <button
             onClick={() => {
-              setSearchParams(new URLSearchParams({ filter: 'All' }));
+              setSearchParams({ filter: 'All' });
             }}
-            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-bold transition-all"
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeFilter === 'All' && !activeMuscle ? 'bg-emerald-500 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'}`}
           >
             Show All
           </button>
           <button
             onClick={() => {
-              setSearchParams(new URLSearchParams({ filter: 'All', muscle: 'Beginner' }));
+              setSearchParams({ filter: 'All', muscle: 'Beginner' });
             }}
-            className="px-4 py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-xl text-xs font-bold transition-all"
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeMuscle === 'Beginner' ? 'bg-emerald-500 text-white shadow-lg' : 'bg-emerald-100 hover:bg-emerald-200 text-emerald-700'}`}
           >
             🟢 Beginner Only
           </button>
           <button
             onClick={() => {
-              if (user.location === WorkoutLocation.HOME) {
-                setSearchParams(new URLSearchParams({ filter: 'All', muscle: 'Home' }));
-              } else {
-                setSearchParams(new URLSearchParams({ filter: 'All' }));
-              }
+              setSearchParams({ filter: 'All', muscle: 'Home' });
             }}
-            className="px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-xl text-xs font-bold transition-all"
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeMuscle === 'Home' ? 'bg-emerald-500 text-white shadow-lg' : 'bg-blue-100 hover:bg-blue-200 text-blue-700'}`}
           >
-            🏠 {user.location} Friendly
+            🏠 Home Friendly
           </button>
         </div>
       </div>

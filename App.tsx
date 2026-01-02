@@ -26,7 +26,10 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
     );
   }
 
-  // For now, allow both authenticated and anonymous users
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
   return <>{children}</>;
 };
 
