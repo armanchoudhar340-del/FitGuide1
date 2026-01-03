@@ -15,7 +15,7 @@ export const getFitnessInsight = async (user: UserProfile, bmiScore: number, bmi
     }
 
     const response = await ai.models.generateContent({
-      model: "gemini-1.5-flash",
+      model: "gemini-2.0-flash",
       contents: `Generate a short, encouraging fitness insight for a ${user.age} year old ${user.gender} aiming for ${user.goal}. 
       BMI is ${bmiScore.toFixed(1)} (${bmiCategory}). 
       Workout Location: ${user.location}. 
@@ -61,7 +61,7 @@ export const generateAiWorkoutRoutine = async (user: UserProfile, bmiCategory: s
       : 'Location: Home (No heavy equipment)';
 
     const response = await ai.models.generateContent({
-      model: "gemini-1.5-flash",
+      model: "gemini-2.0-flash",
       contents: `As a world-class personal trainer, generate a custom daily workout routine for a beginner.
       User Profile: ${user.age}yr old ${user.gender}, Goal: ${user.goal}, BMI Status: ${bmiCategory}.
       ${equipmentText}.
@@ -131,7 +131,7 @@ export const generateMealPlan = async (user: UserProfile) => {
       return "Focus on whole foods, lean proteins, and plenty of greens. Try to eat every 3-4 hours to keep your energy stable!";
     }
     const response = await ai.models.generateContent({
-      model: "gemini-1.5-flash",
+      model: "gemini-2.0-flash",
       contents: `As a professional nutritionist, generate a 1-day sample meal plan for a ${user.age} year old ${user.gender} who wants to ${user.goal}. 
       Height: ${user.height}cm, Weight: ${user.weight}kg. 
       Format the response with headers for Breakfast, Lunch, Snack, and Dinner. Keep it concise and beginner-friendly.`,
@@ -152,7 +152,7 @@ export const chatWithFitGuide = async (history: { role: 'user' | 'model', messag
       return "I'm sorry, I can't chat right now as the AI service is not configured. Please check back later!";
     }
     const chat = ai.chats.create({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.0-flash',
       config: {
         systemInstruction: 'You are FitGuide Assistant, a friendly fitness coach for beginners. Provide simple, safe, and effective advice on gym machines, home workouts, and basic nutrition. Always encourage proper form.',
       },
@@ -164,5 +164,104 @@ export const chatWithFitGuide = async (history: { role: 'user' | 'model', messag
   } catch (error) {
     console.error("Gemini Chat Error:", error);
     return "I'm sorry, I'm having trouble connecting right now. Let's focus on your workout plan!";
+  }
+};
+
+/**
+ * Converts a File object to a Format that Gemini can use
+ */
+async function fileToGenerativePart(file: File) {
+  const base64EncodedDataPromise = new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = (reader.result as string).split(',')[1];
+      resolve(base64String);
+    };
+    reader.readAsDataURL(file);
+  });
+
+  return {
+    inlineData: {
+      data: await base64EncodedDataPromise,
+      mimeType: file.type
+    },
+  };
+}
+
+export const analyzeEquipmentImage = async (imageFile: File) => {
+  try {
+    console.log("Gemini: Analyzing equipment image...", {
+      name: imageFile.name,
+      type: imageFile.type,
+      size: imageFile.size
+    });
+
+    if (!apiKey) {
+      console.error("Gemini Error: API key is missing (VITE_API_KEY)");
+      return "AI service is not configured. Please add a Gemini API key to use this feature.";
+    }
+
+    const imagePart = await fileToGenerativePart(imageFile);
+
+    const prompt = `Identify the gym equipment in this photo. Provide:
+    1. Name of the machine/equipment.
+    2. Primary muscles targeted.
+    3. Step-by-step instructions on how to use it safely.
+    4. A "Pro Tip" for better form.
+    Format your response with clear headers and emojis. If the image doesn't show gym equipment, politely say so.`;
+
+    console.log("Gemini: Sending request to generateContent (gemini-2.0-flash)...");
+    const response = await ai.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: [
+        { text: prompt },
+        { inlineData: imagePart.inlineData }
+      ] as any
+    });
+
+    console.log("Gemini: Analysis successful");
+    return response.text;
+  } catch (error: any) {
+    console.error("Gemini Equipment Analysis Error:", error);
+
+    // Enhanced check for Quota Exceeded - check multiple error properties
+    const isQuotaError =
+      error?.status === 429 ||
+      error?.error?.code === 429 ||
+      error?.error?.status === "RESOURCE_EXHAUSTED" ||
+      error?.message?.includes("429") ||
+      error?.message?.includes("RESOURCE_EXHAUSTED") ||
+      error?.message?.includes("quota") ||
+      JSON.stringify(error).includes("429") ||
+      JSON.stringify(error).includes("RESOURCE_EXHAUSTED");
+
+    if (isQuotaError) {
+      console.warn("🎯 Gemini Quota Hit. Providing Mock Response for Demo.");
+      return `✨ **AI Scan Result** (Demo Mode)
+
+**Equipment Identified:** Cable Crossover Machine (Functional Trainer)
+
+**Primary Muscles Targeted:**
+• Chest (Pectorals)
+• Shoulders (Anterior Deltoids)
+• Triceps
+
+**How to Use Safely:**
+1. Stand in the center of the machine with feet shoulder-width apart
+2. Grasp both handles with a neutral or overhand grip
+3. Keep a slight bend in your elbows throughout the movement
+4. Slowly bring the handles together in front of your chest
+5. Control the return to starting position - don't let the weights slam
+
+**💡 Pro Tip:** Focus on the "squeeze" at the center of the movement. This is where maximum chest activation occurs. Keep your core engaged and avoid leaning forward excessively.
+
+---
+*⚠️ Demo Mode Active: Your API quota is currently exhausted. Wait 30-60 seconds and try again for a live AI scan!*`;
+    }
+
+    if (error instanceof Error) {
+      console.error("Error Message:", error.message);
+    }
+    return "I couldn't analyze the image. Please make sure it shows a clear photo of gym equipment and try again.";
   }
 };

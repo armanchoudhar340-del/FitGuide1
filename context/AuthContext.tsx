@@ -92,20 +92,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const signUp = async (email: string, password: string, name: string) => {
     try {
-      const { data, error } = await Promise.race([
-        supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: {
-              name,
-            },
+      console.log('Attempting to sign up:', email);
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name,
           },
-        }),
-        new Promise<{ data: any; error: any }>((resolve) =>
-          setTimeout(() => resolve({ data: null, error: { message: 'Request timed out. Please check your connection or try again later.' } }), 30000)
-        )
-      ]);
+        },
+      });
 
       if (error) {
         return { error };
@@ -138,6 +134,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       return { error: null };
     } catch (err: any) {
+      console.error('Signup error:', err);
       return { error: { message: err.message || 'An unexpected error occurred' } as any };
     }
   };
@@ -202,15 +199,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await Promise.race([
-        supabase.auth.signInWithPassword({
-          email,
-          password,
-        }),
-        new Promise<{ error: any }>((resolve) =>
-          setTimeout(() => resolve({ error: { message: 'Request timed out. Please check your connection or try again later.' } }), 30000)
-        )
-      ]);
+      console.log('Attempting to sign in:', email);
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
       if (!error) {
         // After successful login, migrate any anonymous workouts to the authenticated user

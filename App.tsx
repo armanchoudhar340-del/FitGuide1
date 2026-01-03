@@ -12,6 +12,7 @@ import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import ProfilePage from './pages/ProfilePage';
+import ScannerPage from './pages/ScannerPage';
 import NotFound from './pages/NotFound';
 
 // Protected Route wrapper
@@ -121,6 +122,7 @@ const AppContent: React.FC = () => {
         <Route path="/progress" element={<ProgressView />} />
         <Route path="/nutrition" element={<NutritionView user={user} />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/scanner" element={<ScannerPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Layout>

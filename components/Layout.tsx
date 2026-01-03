@@ -25,6 +25,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user }) => {
     { id: 'workouts', icon: '🏋️', label: 'Workouts', path: '/workouts' },
     { id: 'progress', icon: '📈', label: 'Progress', path: '/progress' },
     { id: 'nutrition', icon: '🍎', label: 'Nutrition', path: '/nutrition' },
+    { id: 'scanner', icon: '📸', label: 'AI Scanner', path: '/scanner' },
     { id: 'profile', icon: '👤', label: 'Profile', path: '/profile' },
   ];
 
